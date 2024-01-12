@@ -1,7 +1,7 @@
 package com.project.importer.controller;
 
-import com.project.importer.entity.Pessoa;
-import com.project.importer.repository.PessoaRepository;
+import com.project.importer.model.Pessoa;
+import com.project.importer.service.PessoaService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,59 +10,44 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+
+import static java.util.Objects.isNull;
 
 @Slf4j
 @RestController
 public class PessoaController {
 
     @Autowired
-    private PessoaRepository pessoaRepository;
+    private PessoaService pessoaService;
 
     @GetMapping(value = "/pessoa", produces = "application/json")
     public List<Pessoa> get() {
-        return pessoaRepository.findAll();
+        return pessoaService.getAllPessoas();
     }
 
     @GetMapping(value = "/pessoa/{id}", produces = "application/json")
     public ResponseEntity<Pessoa> getById(@PathVariable(value = "id") long id) {
-        Optional<Pessoa> pessoa = pessoaRepository.findById(id);
-
-        return pessoa.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return pessoaService.getPessoaById(id);
     }
 
     @PostMapping(value = "/pessoa")
     public Pessoa post(@Valid @RequestBody Pessoa pessoa) {
-        return pessoaRepository.saveAndFlush(pessoa);
+        return pessoaService.savePessoa(pessoa);
     }
 
     @PutMapping(value = "/pessoa/{id}")
     public ResponseEntity<Pessoa> put(@PathVariable(value = "id") long id, @Valid @RequestBody Pessoa newPessoa) {
+        Pessoa pessoa = pessoaService.updatePessoaById(id, newPessoa);
 
-        Optional<Pessoa> oldPessoaOpt = pessoaRepository.findById(id);
+        return isNull(pessoa) ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(pessoa, HttpStatus.OK);
 
-        if (oldPessoaOpt.isPresent()) {
-            Pessoa pessoa = oldPessoaOpt.get();
-            pessoa.setId(newPessoa.getId());
-            pessoa.setNome(newPessoa.getNome());
-            pessoaRepository.saveAndFlush(pessoa);
-
-            return new ResponseEntity<Pessoa>(pessoa, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
     }
 
     @DeleteMapping(value = "/pessoa/{id}")
     public ResponseEntity<Object> delete(@PathVariable(value = "id") long id) {
-        Optional<Pessoa> pessoa = pessoaRepository.findById(id);
-        if (pessoa.isPresent()) {
-            pessoaRepository.delete(pessoa.get());
+        boolean isDropped = pessoaService.deletePessoaById(id);
 
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return isDropped ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }
