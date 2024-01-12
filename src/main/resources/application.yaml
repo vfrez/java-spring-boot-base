@@ -8,6 +8,8 @@ spring:
   output:
     ansi:
       enabled: always #Habilita as cores no console
+  liquibase:
+    change-log: classpath:db/changelog-master.xml
 
   ## Hibernate Properties
   jpa:

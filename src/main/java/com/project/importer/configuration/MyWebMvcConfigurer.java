@@ -10,7 +10,6 @@ public class MyWebMvcConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        System.out.println("Passou pelo interceptor");
         registry.addInterceptor(new HandleRequest());
     }
 }

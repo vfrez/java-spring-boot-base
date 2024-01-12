@@ -10,14 +10,12 @@ public class HandleRequest implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        // Log request details
         log.info("Received request: {} {}", request.getMethod(), request.getRequestURI());
         return true;
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)  {
-        // Log response details
         log.debug("Sent response: {} {} with status {}", request.getMethod(), request.getRequestURI(), response.getStatus());
     }
 

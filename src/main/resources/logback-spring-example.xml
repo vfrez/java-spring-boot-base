@@ -15,3 +15,4 @@
 </configuration>
 
 <!--Não está fazendo line break das exceptions-->
+<!--Para ativar, tem que trocar o nome para "logback.xml ou logback-spring.xml-->
