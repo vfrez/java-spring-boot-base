@@ -1,0 +1,22 @@
+## Database Properties
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/importer?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  output:
+    ansi:
+      enabled: always #Habilita as cores no console
+
+  ## Hibernate Properties
+  jpa:
+    hibernate:
+      #Valida na inicialização do sistema, se o JPA conseguirá se comunicar com as entidades definidas
+      ddl-auto: validate
+      naming:
+        #Para encontrar tabelas uppercase no banco de dados, por padrão o hibernate busca tudo com lowercase
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.MySQLDialect

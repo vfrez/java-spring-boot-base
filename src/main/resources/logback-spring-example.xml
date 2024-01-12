@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <conversionRule conversionWord="crlf" converterClass="org.owasp.security.logging.mask.CRLFConverter"/>
+
+    <conversionRule conversionWord="clr"
+                    converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr([%d{dd/MM/yyyy HH:mm:ss.SSS X}]){faint} %clr([%-32mdc{traceId:----- traceId -----}]){magenta} %clr([%-33.-33thread]){blue} %clr([%-5level]) %clr([%-70logger{70}]){cyan}%crlf(%msg) %n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>
+
+<!--Não está fazendo line break das exceptions-->
