@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import static java.util.Objects.isNull;
 
@@ -26,7 +27,7 @@ public class PessoaController {
     }
 
     @GetMapping(value = "/pessoa/{id}", produces = "application/json")
-    public ResponseEntity<Pessoa> getById(@PathVariable(value = "id") long id) {
+    public ResponseEntity<Pessoa> getById(@PathVariable(value = "id") UUID id) {
         return pessoaService.getPessoaById(id);
     }
 
@@ -36,7 +37,7 @@ public class PessoaController {
     }
 
     @PutMapping(value = "/pessoa/{id}")
-    public ResponseEntity<Pessoa> put(@PathVariable(value = "id") long id, @Valid @RequestBody Pessoa newPessoa) {
+    public ResponseEntity<Pessoa> put(@PathVariable(value = "id") UUID id, @Valid @RequestBody Pessoa newPessoa) {
         Pessoa pessoa = pessoaService.updatePessoaById(id, newPessoa);
 
         return isNull(pessoa) ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(pessoa, HttpStatus.OK);
@@ -44,7 +45,7 @@ public class PessoaController {
     }
 
     @DeleteMapping(value = "/pessoa/{id}")
-    public ResponseEntity<Object> delete(@PathVariable(value = "id") long id) {
+    public ResponseEntity<Object> delete(@PathVariable(value = "id") UUID id) {
         boolean isDropped = pessoaService.deletePessoaById(id);
 
         return isDropped ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
