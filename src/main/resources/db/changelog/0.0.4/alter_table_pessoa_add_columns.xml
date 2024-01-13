@@ -13,18 +13,31 @@ http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibas
 
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="PESSOA"/>
+                <columnExists columnName="SOBRENOME" tableName="PESSOA"/>
+                <columnExists columnName="DATA_NASCIMENTO" tableName="PESSOA"/>
+                <columnExists columnName="DATA_CADASTRO" tableName="PESSOA"/>
+                <columnExists columnName="OBSERVACAO" tableName="PESSOA"/>
             </not>
         </preConditions>
 
-        <createTable tableName="PESSOA">
-            <column name="ID" type="${uuid}">
-                <constraints primaryKey="true" primaryKeyName="PK_PESSOA"/>
+        <addColumn tableName="PESSOA">
+            <column name="SOBRENOME"
+                    type="varchar(250)"/>
+
+            <column name="DATA_NASCIMENTO"
+                    type="date"/>
+
+            <column name="DATA_CADASTRO"
+                    type="datetime">
+                <constraints nullable="false"/>
             </column>
-            <column name="NOME" type="varchar(100)">
-                <constraints unique="false" nullable="false"/>
-            </column>
-        </createTable>
+
+            <column name="DATA_ATUALIZACAO"
+                    type="datetime"/>
+
+            <column name="OBSERVACAO"
+                    type="varchar(1000)"/>
+        </addColumn>
 
     </changeSet>
 

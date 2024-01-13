@@ -9,8 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -23,22 +25,23 @@ public class PessoaService {
         return pessoaRepository.findAll();
     }
 
-    public ResponseEntity<Pessoa> getPessoaById(long id) {
+    public ResponseEntity<Pessoa> getPessoaById(UUID id) {
         Optional<Pessoa> pessoa = pessoaRepository.findById(id);
 
         return pessoa.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     public Pessoa savePessoa(Pessoa pessoa) {
+        pessoa.setDataCadastro(LocalDateTime.now());
         return pessoaRepository.saveAndFlush(pessoa);
     }
 
-    public Pessoa updatePessoaById(long id, Pessoa newPessoa) {
+    public Pessoa updatePessoaById(UUID id, Pessoa newPessoa) {
         Optional<Pessoa> oldPessoaOpt = pessoaRepository.findById(id);
 
         if (oldPessoaOpt.isPresent()) {
             Pessoa pessoa = oldPessoaOpt.get();
-            pessoa.setId(newPessoa.getId());
+            pessoa.setDataAtualizacao(LocalDateTime.now());
             pessoa.setNome(newPessoa.getNome());
 
             return pessoaRepository.saveAndFlush(pessoa);
@@ -47,7 +50,7 @@ public class PessoaService {
         }
     }
 
-    public boolean deletePessoaById(long id) {
+    public boolean deletePessoaById(UUID id) {
         Optional<Pessoa> pessoa = pessoaRepository.findById(id);
 
         if (pessoa.isPresent()) {
