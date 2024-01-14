@@ -73,10 +73,10 @@ public class PopulateDatabaseService {
             pessoaList.add(pessoa);
 
             if (i % batchSize == 0) {
-                log.info("Saving {} registers on database. Batch {}/{}. Duration: {}.", batchSize, actualBatch, totalBatches, calculateTime(batchStartTime, Instant.now()));
-
                 Instant repositoryStartTime = Instant.now();
                 pessoaRepository.saveAllAndFlush(pessoaList);
+
+                log.info("Saving {} registers on database. Batch {}/{}. Duration: {}.", batchSize, actualBatch, totalBatches, calculateTime(batchStartTime, Instant.now()));
                 log.debug("Time to save data list: {}. Time to make a fake data: {}.", calculateTime(repositoryStartTime, Instant.now()), calculateTime(fakerStartTime, Instant.now()));
 
                 pessoaList.clear();
