@@ -1,6 +1,7 @@
 package com.project.importer.service;
 
 
+import com.project.importer.dto.PessoaCounterResponse;
 import com.project.importer.model.Pessoa;
 import com.project.importer.repository.PessoaRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,17 @@ public class PessoaService {
 
     public List<Pessoa> getAllPessoas() {
         return pessoaRepository.findAll();
+    }
+
+    public PessoaCounterResponse countAllPessoas() {
+        long count = pessoaRepository.count();
+        return new PessoaCounterResponse(count);
+    }
+
+
+    public boolean deleteAllPessoas() {
+        pessoaRepository.deleteAllInBatch();
+        return true;
     }
 
     public ResponseEntity<Pessoa> getPessoaById(UUID id) {

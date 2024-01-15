@@ -1,5 +1,6 @@
 package com.project.importer.controller;
 
+import com.project.importer.dto.PessoaCounterResponse;
 import com.project.importer.model.Pessoa;
 import com.project.importer.service.PessoaService;
 import jakarta.validation.Valid;
@@ -24,6 +25,18 @@ public class PessoaController {
     @GetMapping(value = "/pessoa", produces = "application/json")
     public List<Pessoa> get() {
         return pessoaService.getAllPessoas();
+    }
+
+    @GetMapping(value = "/pessoa/count", produces = "application/json")
+    public PessoaCounterResponse countAllPessoas() {
+        return pessoaService.countAllPessoas();
+    }
+
+    @DeleteMapping(value = "/pessoa/delete-all")
+    public ResponseEntity<Object> deleteAllPessoas() {
+        boolean isDropped = pessoaService.deleteAllPessoas();
+
+        return isDropped ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/pessoa/{id}", produces = "application/json")

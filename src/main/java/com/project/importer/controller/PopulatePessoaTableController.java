@@ -35,4 +35,22 @@ public class PopulatePessoaTableController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PostMapping(value = "multiThread", consumes = "application/json")
+    private ResponseEntity<Object> populatePessoaTableMultiThread(@RequestBody PopulateTableRequestDTO populateTableRequestDTO) {
+        if (populateDatabaseService.populatePessoaTableMultiThread(populateTableRequestDTO)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping(value = "multiThread/new-threadpool", consumes = "application/json")
+    private ResponseEntity<Object> populatePessoaTableMultiThreadNewForkJoinPool(@RequestBody PopulateTableRequestDTO populateTableRequestDTO) {
+        if (populateDatabaseService.populatePessoaTableMultiThreadNewForkJoinPool(populateTableRequestDTO)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
 }
