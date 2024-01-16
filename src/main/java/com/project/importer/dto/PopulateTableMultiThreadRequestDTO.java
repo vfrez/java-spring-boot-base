@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PopulateTableRequestDTO {
+public class PopulateTableMultiThreadRequestDTO {
 
     private int quantity;
-    private int batchSize;
+    private int poolSize;
 
 }

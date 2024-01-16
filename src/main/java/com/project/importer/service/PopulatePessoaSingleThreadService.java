@@ -1,7 +1,7 @@
 package com.project.importer.service;
 
 import com.github.javafaker.Faker;
-import com.project.importer.dto.PopulateTableRequestDTO;
+import com.project.importer.dto.PopulateTableSingleThreadRequestDTO;
 import com.project.importer.model.Pessoa;
 import com.project.importer.repository.PessoaRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -15,21 +15,16 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 
 @Slf4j
 @Service
-public class PopulateDatabaseService {
+public class PopulatePessoaSingleThreadService {
 
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    public boolean populatePessoaTableForLoop(PopulateTableRequestDTO populateTableRequestDTO) {
-        int quantityRegisters = populateTableRequestDTO.getQuantity();
+    public boolean populatePessoaTableForLoop(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+        int quantityRegisters = populateTableSingleThreadRequestDTO.getQuantity();
 
         log.info("Starting loop. {} Registers on a single batch. Committing each registers.", quantityRegisters);
 
@@ -45,9 +40,9 @@ public class PopulateDatabaseService {
         return true;
     }
 
-    public boolean populatePessoaTableForLoopWithBatch(PopulateTableRequestDTO populateTableRequestDTO) {
-        int quantityRegisters = populateTableRequestDTO.getQuantity();
-        int batchSize = populateTableRequestDTO.getBatchSize();
+    public boolean populatePessoaTableForLoopWithBatch(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+        int quantityRegisters = populateTableSingleThreadRequestDTO.getQuantity();
+        int batchSize = populateTableSingleThreadRequestDTO.getBatchSize();
         int totalBatches = quantityRegisters / batchSize;
         int actualBatch = 1;
 
@@ -76,48 +71,6 @@ public class PopulateDatabaseService {
         }
 
         log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantityRegisters, calculateTime(startTime, Instant.now()));
-
-        return true;
-    }
-
-    public boolean populatePessoaTableMultiThread(PopulateTableRequestDTO populateTableRequestDTO) {
-        int quantity = populateTableRequestDTO.getQuantity();
-
-        Faker faker = new Faker(new Locale("pt-BR"));
-        Instant startTime = Instant.now();
-        IntStream.rangeClosed(1, quantity).parallel().forEach(index -> {
-            pessoaRepository.saveAndFlush(createFakePessoa(faker));
-        });
-
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, calculateTime(startTime, Instant.now()));
-
-        return true;
-    }
-
-    public boolean populatePessoaTableMultiThreadNewForkJoinPool(PopulateTableRequestDTO populateTableRequestDTO) {
-        Faker faker = new Faker(new Locale("pt-BR"));
-
-        int quantity = populateTableRequestDTO.getQuantity();
-
-        List<Long> aList = LongStream.rangeClosed(1, quantity).boxed().collect(Collectors.toList());
-
-        Instant startTime = Instant.now();
-
-        ForkJoinPool customThreadPool = new ForkJoinPool(4);
-        try {
-            customThreadPool.submit(() -> {
-                aList.parallelStream().forEach(i -> {
-                    pessoaRepository.saveAndFlush(createFakePessoa(faker));
-                });
-                return 1;
-            }).get(); //Da pra refatorar com wait
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            customThreadPool.shutdown();
-        }
-
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, calculateTime(startTime, Instant.now()));
 
         return true;
     }

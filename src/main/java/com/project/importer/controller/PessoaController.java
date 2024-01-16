@@ -1,6 +1,6 @@
 package com.project.importer.controller;
 
-import com.project.importer.dto.PessoaCounterResponse;
+import com.project.importer.dto.PessoaCounterResponseDTO;
 import com.project.importer.model.Pessoa;
 import com.project.importer.service.PessoaService;
 import jakarta.validation.Valid;
@@ -28,15 +28,22 @@ public class PessoaController {
     }
 
     @GetMapping(value = "/pessoa/count", produces = "application/json")
-    public PessoaCounterResponse countAllPessoas() {
-        return pessoaService.countAllPessoas();
+    public ResponseEntity<PessoaCounterResponseDTO> countAllPessoas() {
+        PessoaCounterResponseDTO pessoaCounterResponseDTO = pessoaService.countAllPessoas();
+
+        return new ResponseEntity<>(pessoaCounterResponseDTO, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/pessoa/delete-all")
-    public ResponseEntity<Object> deleteAllPessoas() {
+    public ResponseEntity<PessoaCounterResponseDTO> deleteAllPessoas() {
         boolean isDropped = pessoaService.deleteAllPessoas();
 
-        return isDropped ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (isDropped) {
+            PessoaCounterResponseDTO pessoaCounterResponseDTO = pessoaService.countAllPessoas();
+            return new ResponseEntity<>(pessoaCounterResponseDTO, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/pessoa/{id}", produces = "application/json")
@@ -45,8 +52,9 @@ public class PessoaController {
     }
 
     @PostMapping(value = "/pessoa")
-    public Pessoa post(@Valid @RequestBody Pessoa pessoa) {
-        return pessoaService.savePessoa(pessoa);
+    public ResponseEntity<Pessoa> post(@Valid @RequestBody Pessoa pessoa) {
+        Pessoa createdPessoa = pessoaService.savePessoa(pessoa);
+        return new ResponseEntity<>(createdPessoa, HttpStatus.OK);
     }
 
     @PutMapping(value = "/pessoa/{id}")

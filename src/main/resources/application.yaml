@@ -6,8 +6,8 @@ spring:
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 10
+      maximum-pool-size: 20
+      minimum-idle: 20
       #leak-detection-threshold: 30000
   output:
     ansi:
@@ -27,8 +27,8 @@ spring:
 #      hibernate:
 #        dialect: org.hibernate.dialect.MySQLDialect
 
-logging:
-  level:
-    #Habilita informações sobre o hikari, como o tamanho do pool atual
-    com.zaxxer.hikari.HikariConfig: DEBUG
-    com.zaxxer.hikari: TRACE
+#logging:
+#  level:
+#    #Habilita informações sobre o hikari, como o tamanho do pool atual
+#    com.zaxxer.hikari.HikariConfig: DEBUG
+#    com.zaxxer.hikari: TRACE

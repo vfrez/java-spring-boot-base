@@ -9,6 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PessoaCounterResponse {
-    private long counter;
+public class PessoaCounterResponseDTO {
+
+    private long quantity;
+
 }
