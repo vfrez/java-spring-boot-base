@@ -16,7 +16,7 @@ Até o momento foi feito:
     - Loops simples
     - Loops com commit no banco usando um lote de itens
   - Cadastro em Multi-thread
-    - Usando [ParallelStream](https://www.baeldung.com/java-when-to-use-parallel-stream) (Onde cada núcleo do processador será uma thread) com ForkJoinPool default
+    - Usando [ParallelStream](https://www.baeldung.com/java-when-to-use-parallel-stream) ([Onde cada núcleo do processador será uma thread](https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream)) com ForkJoinPool default
     - Usando um [ForkJoinPool novo](https://www.baeldung.com/java-8-parallel-streams-custom-threadpool)
 
 
