@@ -12,13 +12,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 
 @Slf4j
 @Service
@@ -28,18 +25,22 @@ public class PopulatePessoaMultiThreadService {
     private PessoaRepository pessoaRepository;
 
     public boolean populatePessoaTableMultiThread(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
-        ForkJoinPool pool = ForkJoinPool.commonPool();
-        showPoolInfoInfoLog(pool);
+        Instant startTime = Instant.now();
 
         int quantity = populateTableMultiThreadRequestDTO.getQuantity();
+
+        log.info("Starting loop. {} Registers on a single batch in parallel using default ForkPool. Committing each registers.", quantity);
+
+        ForkJoinPool defaultPool = ForkJoinPool.commonPool();
+        showPoolInfoInfoLog(defaultPool);
+
         Faker faker = new Faker(new Locale("pt-BR"));
-        Instant startTime = Instant.now();
         IntStream.rangeClosed(1, quantity).parallel().forEach(index -> {
-            showPoolInfoDebugLog(pool);
+            showPoolInfoDebugLog(defaultPool);
             pessoaRepository.saveAndFlush(createFakePessoa(faker));
         });
 
-        showPoolInfoInfoLog(pool);
+        showPoolInfoInfoLog(defaultPool);
 
         log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, calculateTime(startTime, Instant.now()));
 
@@ -47,25 +48,18 @@ public class PopulatePessoaMultiThreadService {
     }
 
     public boolean populatePessoaTableMultiThreadNewForkJoinPool(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
-        Faker faker = new Faker(new Locale("pt-BR"));
+        Instant startTime = Instant.now();
 
         int quantity = populateTableMultiThreadRequestDTO.getQuantity();
         int poolSize = populateTableMultiThreadRequestDTO.getPoolSize();
 
-        Instant startTime = Instant.now();
+        log.info("Starting loop. {} Registers on a single batch in parallel using {} thread on new ThreadPool. Committing each registers.", quantity, poolSize);
 
-        List<Long> aList = LongStream.rangeClosed(1, quantity).boxed().collect(Collectors.toList());
         ForkJoinPool customThreadPool = new ForkJoinPool(poolSize);
         showPoolInfoInfoLog(customThreadPool);
 
         try {
-            customThreadPool.submit(() -> {
-                aList.parallelStream().forEach(i -> {
-                    showPoolInfoDebugLog(customThreadPool);
-                    pessoaRepository.saveAndFlush(createFakePessoa(faker));
-                });
-                return 1;
-            }).get();
+            customThreadPool.submit(runParallelCreation(quantity, customThreadPool)).get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -76,6 +70,17 @@ public class PopulatePessoaMultiThreadService {
         log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, calculateTime(startTime, Instant.now()));
 
         return true;
+    }
+
+    private Runnable runParallelCreation(int quantity, ForkJoinPool customThreadPool) {
+        Faker faker = new Faker(new Locale("pt-BR"));
+
+        return () -> {
+            IntStream.rangeClosed(1, quantity).parallel().forEach(i -> {
+                showPoolInfoDebugLog(customThreadPool);
+                pessoaRepository.saveAndFlush(createFakePessoa(faker));
+            });
+        };
     }
 
     private Duration calculateTime(Instant startTime, Instant endTime) {

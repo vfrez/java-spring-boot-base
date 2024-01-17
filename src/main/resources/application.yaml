@@ -6,7 +6,7 @@ spring:
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 20
+      maximum-pool-size: 40
       minimum-idle: 20
       #leak-detection-threshold: 30000
   output:
