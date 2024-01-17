@@ -1,6 +1,6 @@
 package com.project.importer.controller;
 
-import com.project.importer.dto.PopulateTableMultiThreadRequestDTO;
+import com.project.importer.dto.request.PopulateTableMultiThreadRequestDTO;
 import com.project.importer.service.PopulatePessoaMultiThreadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +27,7 @@ public class PopulatePessoaMultiThreadController {
     }
 
     @PostMapping(value = "multiThread/new-threadpool", consumes = "application/json")
+
     private ResponseEntity<Object> populatePessoaTableMultiThreadNewForkJoinPool(@RequestBody PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
         if (populatePessoaMultiThreadService.populatePessoaTableMultiThreadNewForkJoinPool(populateTableMultiThreadRequestDTO)) {
             return new ResponseEntity<>(HttpStatus.OK);

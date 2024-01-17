@@ -1,4 +1,4 @@
-package com.project.importer.dto;
+package com.project.importer.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,9 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PopulateTableSingleThreadRequestDTO {
+public class PessoaCounterResponseDTO {
 
-    private int quantity;
-    private int batchSize;
+    private long quantity;
 
 }

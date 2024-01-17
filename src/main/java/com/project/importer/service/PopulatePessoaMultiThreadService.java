@@ -1,7 +1,7 @@
 package com.project.importer.service;
 
 import com.github.javafaker.Faker;
-import com.project.importer.dto.PopulateTableMultiThreadRequestDTO;
+import com.project.importer.dto.request.PopulateTableMultiThreadRequestDTO;
 import com.project.importer.model.Pessoa;
 import com.project.importer.repository.PessoaRepository;
 import lombok.extern.slf4j.Slf4j;

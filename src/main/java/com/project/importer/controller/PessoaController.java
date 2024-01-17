@@ -1,6 +1,6 @@
 package com.project.importer.controller;
 
-import com.project.importer.dto.PessoaCounterResponseDTO;
+import com.project.importer.dto.response.PessoaCounterResponseDTO;
 import com.project.importer.model.Pessoa;
 import com.project.importer.service.PessoaService;
 import jakarta.validation.Valid;

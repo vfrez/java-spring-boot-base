@@ -1,6 +1,6 @@
 package com.project.importer.controller;
 
-import com.project.importer.dto.PopulateTableSingleThreadRequestDTO;
+import com.project.importer.dto.request.PopulateTableSingleThreadRequestDTO;
 import com.project.importer.service.PopulatePessoaSingleThreadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

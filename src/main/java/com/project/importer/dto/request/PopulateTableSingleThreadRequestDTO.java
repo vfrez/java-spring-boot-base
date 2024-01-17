@@ -1,4 +1,4 @@
-package com.project.importer.dto;
+package com.project.importer.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,9 +9,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PopulateTableMultiThreadRequestDTO {
+public class PopulateTableSingleThreadRequestDTO {
 
     private int quantity;
-    private int poolSize;
+    private int batchSize;
 
 }
