@@ -13,8 +13,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Locale;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -58,8 +60,9 @@ public class PopulatePessoaMultiThreadService {
         ForkJoinPool customThreadPool = new ForkJoinPool(poolSize);
         showPoolInfoInfoLog(customThreadPool);
 
+        Integer registeredCounter;
         try {
-            customThreadPool.submit(runParallelCreation(quantity, customThreadPool)).get();
+            registeredCounter = customThreadPool.submit(runParallelCreation(quantity, customThreadPool)).get();
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
@@ -67,19 +70,21 @@ public class PopulatePessoaMultiThreadService {
             customThreadPool.shutdown();
         }
 
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, calculateTime(startTime, Instant.now()));
+        log.info("Generated {} registers on table PESSOA. Time to process: {}.", registeredCounter, calculateTime(startTime, Instant.now()));
 
         return true;
     }
 
-    private Runnable runParallelCreation(int quantity, ForkJoinPool customThreadPool) {
+    private Callable<Integer> runParallelCreation(int quantity, ForkJoinPool customThreadPool) {
         Faker faker = new Faker(new Locale("pt-BR"));
-
+        AtomicReference<Integer> counter = new AtomicReference<>(0);
         return () -> {
             IntStream.rangeClosed(1, quantity).parallel().forEach(i -> {
                 showPoolInfoDebugLog(customThreadPool);
                 pessoaRepository.saveAndFlush(createFakePessoa(faker));
+                counter.getAndSet(counter.get() + 1); //Não funcionou bem, o valor deve se perder nas multi thread
             });
+            return counter.get();
         };
     }
 
