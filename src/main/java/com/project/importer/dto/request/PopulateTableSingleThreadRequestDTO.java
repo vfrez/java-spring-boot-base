@@ -13,5 +13,6 @@ public class PopulateTableSingleThreadRequestDTO {
 
     private int quantity;
     private int batchSize;
+    private int poolSize;
 
 }
