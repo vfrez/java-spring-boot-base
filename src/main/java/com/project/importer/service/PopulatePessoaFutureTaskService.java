@@ -35,7 +35,7 @@ public class PopulatePessoaFutureTaskService {
 
         log.info("Submitting and awaiting Tasks ...");
 
-        pessoaExecutor.submitAndWait(pessoaTaskList);
+        pessoaExecutor.submitAndWaitWithResponse(pessoaTaskList);
 
         log.info("Total time for all execution {}", stopWatch.formatTime());
 

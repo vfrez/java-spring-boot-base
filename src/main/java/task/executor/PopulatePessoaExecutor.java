@@ -11,6 +11,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -29,7 +31,7 @@ public class PopulatePessoaExecutor {
     }
 
     @SneakyThrows
-    public void submitAndWait(List<? extends Callable<Integer>> tasks) {
+    public void submitAndWaitNoResponse(List<? extends Callable<Integer>> tasks) {
         //Tutorial visto aqui https://www.callicoder.com/java-8-completablefuture-tutorial/
         //Tutorial visto aqui https://www.baeldung.com/java-completablefuture
         //Tutorial visto aqui https://stackoverflow.com/questions/19348248/waiting-on-a-list-of-future
@@ -39,13 +41,7 @@ public class PopulatePessoaExecutor {
 
         List<CompletableFuture<Integer>> completableFutureList = new ArrayList<>();
         tasks.forEach(task -> {
-            CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
-                try {
-                    return task.call();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }, threadPool);
+            CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(callTask(task), threadPool);
             completableFutureList.add(completableFuture);
         });
 
@@ -115,4 +111,49 @@ public class PopulatePessoaExecutor {
 
     }
 
+    @SneakyThrows
+    public void submitAndWaitWithResponse(List<? extends Callable<Integer>> tasks) {
+        //Tutorial visto aqui https://www.callicoder.com/java-8-completablefuture-tutorial/
+
+        //Jeito 1: Não da pra ver o resultado de retorno
+        StopWatch stopWatch = StopWatch.createStarted();
+
+        List<CompletableFuture<Integer>> completableFutureList = new ArrayList<>();
+        tasks.forEach(task -> {
+            CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(callTask(task), threadPool);
+            completableFutureList.add(completableFuture);
+        });
+
+        CompletableFuture<Void> allCompletableFutures =
+                CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[completableFutureList.size()]));
+
+
+        CompletableFuture<List<Integer>> allPageContentsFuture = allCompletableFutures.thenApply(v -> {
+            return completableFutureList.stream()
+                    .map(pageContentFuture -> pageContentFuture.join())
+                    .collect(Collectors.toList());
+        });
+
+        CompletableFuture<Integer> countFuture = allPageContentsFuture.thenApply(pageContents -> {
+            return pageContents.stream()
+                    .mapToInt(a -> a.intValue())
+                    .sum();
+        });
+
+        Integer generated = countFuture.get();
+        threadPool.shutdown();
+
+        log.info("Total time to process all {} registers {}", generated, stopWatch.formatTime());
+
+    }
+
+    private Supplier<Integer> callTask(Callable<Integer> task) {
+        return () -> {
+            try {
+                return task.call();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
 }

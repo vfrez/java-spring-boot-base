@@ -26,4 +26,13 @@ public class PopulatePessoaFutureTaskController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @PostMapping(value = "v2/future-task", consumes = "application/json")
+    private ResponseEntity<Object> populatePessoaFutureTaskWithResponse(@RequestBody PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+        if (populatePessoaSingleThreadService.populatePessoaFutureTask(populateTableSingleThreadRequestDTO)) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
 }
