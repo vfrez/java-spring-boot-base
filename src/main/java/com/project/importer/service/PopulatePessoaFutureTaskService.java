@@ -1,6 +1,7 @@
 package com.project.importer.service;
 
 import com.project.importer.dto.request.PopulateTableSingleThreadRequestDTO;
+import com.project.importer.dto.response.DefaultPopulatePessoaResponse;
 import com.project.importer.repository.PessoaRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
@@ -20,7 +21,7 @@ public class PopulatePessoaFutureTaskService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    public boolean populatePessoaFutureTask(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+    public DefaultPopulatePessoaResponse populatePessoaFutureTask(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         StopWatch stopWatch = StopWatch.createStarted();
 
         Integer quantity = populateTableSingleThreadRequestDTO.getQuantity();
@@ -29,17 +30,46 @@ public class PopulatePessoaFutureTaskService {
         List<PopulatePessoaTask> pessoaTaskList = new ArrayList<>(totalPages);
 
         IntStream.rangeClosed(1, totalPages)
-                .forEach(index -> pessoaTaskList.add(new PopulatePessoaTask(maxBatchSize, index, pessoaRepository)));
+                .forEach(index -> pessoaTaskList.add(new PopulatePessoaTask(maxBatchSize, index, totalPages, pessoaRepository)));
 
         PopulatePessoaExecutor pessoaExecutor = new PopulatePessoaExecutor(populateTableSingleThreadRequestDTO.getPoolSize());
 
         log.info("Submitting and awaiting Tasks ...");
 
-        pessoaExecutor.submitAndWaitWithResponse(pessoaTaskList);
+        pessoaExecutor.submitAndWaitNoResponse(pessoaTaskList);
 
-        log.info("Total time for all execution {}", stopWatch.formatTime());
+        String loadTime = stopWatch.formatTime();
+        log.info("Total time for all execution {}", loadTime);
 
-        return true;
+        return DefaultPopulatePessoaResponse.builder()
+                .loadTime(loadTime)
+                .build();
+    }
+
+    public DefaultPopulatePessoaResponse populatePessoaFutureTaskWithResponse(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+        StopWatch stopWatch = StopWatch.createStarted();
+
+        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity();
+        Integer maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
+        Integer totalPages = quantity / maxBatchSize; //Tem que arredondar pra cima
+        List<PopulatePessoaTask> pessoaTaskList = new ArrayList<>(totalPages);
+
+        IntStream.rangeClosed(1, totalPages)
+                .forEach(page -> pessoaTaskList.add(new PopulatePessoaTask(maxBatchSize, page, totalPages, pessoaRepository)));
+
+        PopulatePessoaExecutor pessoaExecutor = new PopulatePessoaExecutor(populateTableSingleThreadRequestDTO.getPoolSize());
+
+        log.info("Submitting and awaiting Tasks ...");
+
+        Integer totalRegistered = pessoaExecutor.submitAndWaitWithResponse(pessoaTaskList);
+
+        String loadTime = stopWatch.formatTime();
+        log.info("Total time for all execution {}", loadTime);
+
+        return DefaultPopulatePessoaResponse.builder()
+                .totalRegistered(totalRegistered)
+                .loadTime(loadTime)
+                .build();
     }
 
 

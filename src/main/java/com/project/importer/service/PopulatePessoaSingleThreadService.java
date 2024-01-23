@@ -2,16 +2,15 @@ package com.project.importer.service;
 
 import com.github.javafaker.Faker;
 import com.project.importer.dto.request.PopulateTableSingleThreadRequestDTO;
+import com.project.importer.dto.response.DefaultPopulatePessoaResponse;
 import com.project.importer.model.Pessoa;
 import com.project.importer.repository.PessoaRepository;
+import com.project.importer.utils.PessoaUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -23,70 +22,68 @@ public class PopulatePessoaSingleThreadService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    public boolean populatePessoaTableForLoop(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+    public DefaultPopulatePessoaResponse populatePessoaTableForLoop(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         int quantityRegisters = populateTableSingleThreadRequestDTO.getQuantity();
 
         log.info("Starting loop. {} Registers on a single batch. Committing each registers.", quantityRegisters);
 
         Faker faker = new Faker(new Locale("pt-BR"));
-        Instant startTime = Instant.now();
+        StopWatch startTime = StopWatch.createStarted();
+
         for (int i = 0; i < quantityRegisters; i++) {
-            pessoaRepository.saveAndFlush(createFakePessoa(faker));
+            pessoaRepository.saveAndFlush(PessoaUtils.createFakePessoa(faker));
         }
 
-        Instant endTime = Instant.now();
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantityRegisters, calculateTime(startTime, endTime));
+        String loadTime = startTime.formatTime();
+        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantityRegisters, loadTime);
 
-        return true;
+        return DefaultPopulatePessoaResponse.builder()
+                .totalRegistered(quantityRegisters)
+                .loadTime(loadTime)
+                .build();
     }
 
-    public boolean populatePessoaTableForLoopWithBatch(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
+    public DefaultPopulatePessoaResponse populatePessoaTableForLoopWithBatch(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         int quantityRegisters = populateTableSingleThreadRequestDTO.getQuantity();
         int batchSize = populateTableSingleThreadRequestDTO.getBatchSize();
         int totalBatches = quantityRegisters / batchSize;
         int actualBatch = 1;
 
         log.info("Starting loop. {} Registers on {} batches. Committing each batch.", quantityRegisters, totalBatches);
-        Instant startTime = Instant.now();
-        Instant batchStartTime = Instant.now();
-        Instant fakerStartTime = Instant.now();
+        StopWatch startTime = StopWatch.createStarted();
+        StopWatch batchStartTime = StopWatch.createStarted();
+        StopWatch fakerStartTime = StopWatch.createStarted();
 
         Faker faker = new Faker(new Locale("pt-BR"));
         List<Pessoa> pessoaList = new ArrayList<>();
+
         for (int i = 0; i < quantityRegisters; i++) {
-            pessoaList.add(createFakePessoa(faker));
+            pessoaList.add(PessoaUtils.createFakePessoa(faker));
 
             if (i % batchSize == 0) {
-                Instant repositoryStartTime = Instant.now();
+                StopWatch repositoryStartTime = StopWatch.createStarted();
                 pessoaRepository.saveAllAndFlush(pessoaList);
 
-                log.info("Saving {} registers on database. Batch {}/{}. Duration: {}.", batchSize, actualBatch, totalBatches, calculateTime(batchStartTime, Instant.now()));
-                log.debug("Time to save data list: {}. Time to make a fake data: {}.", calculateTime(repositoryStartTime, Instant.now()), calculateTime(fakerStartTime, Instant.now()));
+                log.info("Saving {} registers on database. Batch {} / {}. Duration: {}.", batchSize, actualBatch - 1, totalBatches, batchStartTime.formatTime());
+                log.debug("Time to save data list: {}. Time to make a fake data: {}.", repositoryStartTime.formatTime(), fakerStartTime.formatTime());
 
                 pessoaList.clear();
                 actualBatch++;
-                batchStartTime = Instant.now();
-                fakerStartTime = Instant.now();
+                batchStartTime.reset();
+                fakerStartTime.reset();
+                batchStartTime.start();
+                fakerStartTime.start();
             }
         }
 
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantityRegisters, calculateTime(startTime, Instant.now()));
+        String loadTime = startTime.formatTime();
 
-        return true;
+        log.info("Generated {} registers on table PESSOA. Time to process: {}.", actualBatch - 1, loadTime);
+
+        return DefaultPopulatePessoaResponse.builder()
+                .totalRegistered(actualBatch)
+                .loadTime(loadTime)
+                .build();
     }
 
-    private Duration calculateTime(Instant startTime, Instant endTime) {
-        return Duration.between(startTime, endTime);
-    }
-
-    private Pessoa createFakePessoa(Faker faker) {
-        Pessoa pessoa = new Pessoa();
-        pessoa.setNome(faker.name().firstName());
-        pessoa.setSobrenome(faker.name().lastName());
-        pessoa.setDataCadastro(LocalDateTime.now());
-        pessoa.setObservacao(faker.lorem().sentence(10, 10));
-        pessoa.setDataNascimento(faker.date().birthday().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-
-        return pessoa;
-    }
 }

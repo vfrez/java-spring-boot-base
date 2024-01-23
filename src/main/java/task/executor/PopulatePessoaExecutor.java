@@ -112,10 +112,10 @@ public class PopulatePessoaExecutor {
     }
 
     @SneakyThrows
-    public void submitAndWaitWithResponse(List<? extends Callable<Integer>> tasks) {
+    public Integer submitAndWaitWithResponse(List<? extends Callable<Integer>> tasks) {
         //Tutorial visto aqui https://www.callicoder.com/java-8-completablefuture-tutorial/
 
-        //Jeito 1: Não da pra ver o resultado de retorno
+        //Jeito 2: Após allCompletableFutures, é feito um processo para pegar o resultado das futureTasks
         StopWatch stopWatch = StopWatch.createStarted();
 
         List<CompletableFuture<Integer>> completableFutureList = new ArrayList<>();
@@ -127,23 +127,22 @@ public class PopulatePessoaExecutor {
         CompletableFuture<Void> allCompletableFutures =
                 CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[completableFutureList.size()]));
 
+        CompletableFuture<List<Integer>> futureContents =
+                allCompletableFutures.thenApply(v -> completableFutureList.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList()));
 
-        CompletableFuture<List<Integer>> allPageContentsFuture = allCompletableFutures.thenApply(v -> {
-            return completableFutureList.stream()
-                    .map(pageContentFuture -> pageContentFuture.join())
-                    .collect(Collectors.toList());
-        });
+        CompletableFuture<Integer> responseOfCreatedItens =
+                futureContents.thenApply(pageContents -> pageContents.stream()
+                .mapToInt(content -> content)
+                .sum());
 
-        CompletableFuture<Integer> countFuture = allPageContentsFuture.thenApply(pageContents -> {
-            return pageContents.stream()
-                    .mapToInt(a -> a.intValue())
-                    .sum();
-        });
-
-        Integer generated = countFuture.get();
+        Integer generated = responseOfCreatedItens.get();
         threadPool.shutdown();
 
         log.info("Total time to process all {} registers {}", generated, stopWatch.formatTime());
+
+        return generated;
 
     }
 

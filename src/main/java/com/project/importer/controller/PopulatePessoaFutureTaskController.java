@@ -1,6 +1,7 @@
 package com.project.importer.controller;
 
 import com.project.importer.dto.request.PopulateTableSingleThreadRequestDTO;
+import com.project.importer.dto.response.DefaultPopulatePessoaResponse;
 import com.project.importer.service.PopulatePessoaFutureTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("populate/pessoa")
@@ -19,17 +22,18 @@ public class PopulatePessoaFutureTaskController {
 
     @PostMapping(value = "future-task", consumes = "application/json")
     private ResponseEntity<Object> populatePessoaFutureTask(@RequestBody PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
-        if (populatePessoaSingleThreadService.populatePessoaFutureTask(populateTableSingleThreadRequestDTO)) {
-            return new ResponseEntity<>(HttpStatus.OK);
+        DefaultPopulatePessoaResponse pessoaResponse = populatePessoaSingleThreadService.populatePessoaFutureTask(populateTableSingleThreadRequestDTO);
+        if (Objects.nonNull(pessoaResponse)) {
+            return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
         }
-
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping(value = "v2/future-task", consumes = "application/json")
+    @PostMapping(value = "future-task/with-response", consumes = "application/json")
     private ResponseEntity<Object> populatePessoaFutureTaskWithResponse(@RequestBody PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
-        if (populatePessoaSingleThreadService.populatePessoaFutureTask(populateTableSingleThreadRequestDTO)) {
-            return new ResponseEntity<>(HttpStatus.OK);
+        DefaultPopulatePessoaResponse pessoaResponse = populatePessoaSingleThreadService.populatePessoaFutureTask(populateTableSingleThreadRequestDTO);
+        if (Objects.nonNull(pessoaResponse)) {
+            return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

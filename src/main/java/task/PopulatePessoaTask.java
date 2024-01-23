@@ -3,6 +3,7 @@ package task;
 import com.github.javafaker.Faker;
 import com.project.importer.model.Pessoa;
 import com.project.importer.repository.PessoaRepository;
+import com.project.importer.utils.PessoaUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,32 +21,21 @@ public class PopulatePessoaTask implements Callable<Integer> {
 
     private final int quantity;
     private final int page;
+    private final int totalPages;
     private final PessoaRepository pessoaRepository;
 
     @Override
     public Integer call() {
-        log.info("Task for page {}, creating {} registers", page, quantity);
+        log.info("Task for page {} / {}, creating {} registers", page, totalPages, quantity);
 
         List<Pessoa> pessoaList = new ArrayList<>(quantity);
         Faker faker = new Faker(new Locale("pt-BR"));
 
-        IntStream.rangeClosed(1, quantity)
-                .forEach(i -> pessoaList.add(createFakePessoa(faker)));
+        IntStream.rangeClosed(1, quantity).forEach(i -> pessoaList.add(PessoaUtils.createFakePessoa(faker)));
 
         pessoaRepository.saveAllAndFlush(pessoaList);
         pessoaList.clear();
 
         return quantity;
-    }
-
-    private Pessoa createFakePessoa(Faker faker) {
-        Pessoa pessoa = new Pessoa();
-        pessoa.setNome(faker.name().firstName());
-        pessoa.setSobrenome(faker.name().lastName());
-        pessoa.setDataCadastro(LocalDateTime.now());
-        pessoa.setObservacao(faker.lorem().sentence(10, 10));
-        pessoa.setDataNascimento(faker.date().birthday().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-
-        return pessoa;
     }
 }

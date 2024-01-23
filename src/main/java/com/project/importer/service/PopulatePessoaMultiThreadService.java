@@ -2,16 +2,14 @@ package com.project.importer.service;
 
 import com.github.javafaker.Faker;
 import com.project.importer.dto.request.PopulateTableMultiThreadRequestDTO;
-import com.project.importer.model.Pessoa;
+import com.project.importer.dto.response.DefaultPopulatePessoaResponse;
 import com.project.importer.repository.PessoaRepository;
+import com.project.importer.utils.PessoaUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -26,12 +24,12 @@ public class PopulatePessoaMultiThreadService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
-    public boolean populatePessoaTableMultiThread(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
-        Instant startTime = Instant.now();
-
+    public DefaultPopulatePessoaResponse populatePessoaTableMultiThread(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
         int quantity = populateTableMultiThreadRequestDTO.getQuantity();
 
         log.info("Starting loop. {} Registers on a single batch in parallel using default ForkPool. Committing each registers.", quantity);
+
+        StopWatch startTime = StopWatch.createStarted();
 
         ForkJoinPool defaultPool = ForkJoinPool.commonPool();
         showPoolInfoInfoLog(defaultPool);
@@ -39,24 +37,27 @@ public class PopulatePessoaMultiThreadService {
         Faker faker = new Faker(new Locale("pt-BR"));
         IntStream.rangeClosed(1, quantity).parallel().forEach(index -> {
             showPoolInfoDebugLog(defaultPool);
-            pessoaRepository.saveAndFlush(createFakePessoa(faker));
+            pessoaRepository.saveAndFlush(PessoaUtils.createFakePessoa(faker));
         });
 
         showPoolInfoInfoLog(defaultPool);
 
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, calculateTime(startTime, Instant.now()));
+        String loadTime = startTime.formatTime();
+        log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, loadTime);
 
-        return true;
+        return DefaultPopulatePessoaResponse.builder()
+                .totalRegistered(quantity)
+                .loadTime(loadTime)
+                .build();
     }
 
-    public boolean populatePessoaTableMultiThreadNewForkJoinPool(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
-        Instant startTime = Instant.now();
-
+    public DefaultPopulatePessoaResponse populatePessoaTableMultiThreadNewForkJoinPool(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
         int quantity = populateTableMultiThreadRequestDTO.getQuantity();
         int poolSize = populateTableMultiThreadRequestDTO.getPoolSize();
 
         log.info("Starting loop. {} Registers on a single batch in parallel using {} thread on new ThreadPool. Committing each registers.", quantity, poolSize);
 
+        StopWatch startTime = StopWatch.createStarted();
         ForkJoinPool customThreadPool = new ForkJoinPool(poolSize);
         showPoolInfoInfoLog(customThreadPool);
 
@@ -70,37 +71,28 @@ public class PopulatePessoaMultiThreadService {
             customThreadPool.shutdown();
         }
 
-        log.info("Generated {} registers on table PESSOA. Time to process: {}.", registeredCounter, calculateTime(startTime, Instant.now()));
+        String loadTime = startTime.formatTime();
+        log.info("Generated {} registers on table PESSOA. Time to process: {}.", registeredCounter, loadTime);
 
-        return true;
+        return DefaultPopulatePessoaResponse.builder()
+                .totalRegistered(registeredCounter)
+                .loadTime(loadTime)
+                .build();
     }
 
     private Callable<Integer> runParallelCreation(int quantity, ForkJoinPool customThreadPool) {
         Faker faker = new Faker(new Locale("pt-BR"));
         AtomicReference<Integer> counter = new AtomicReference<>(0);
+
         return () -> {
             IntStream.rangeClosed(1, quantity).parallel().forEach(i -> {
                 showPoolInfoDebugLog(customThreadPool);
-                pessoaRepository.saveAndFlush(createFakePessoa(faker));
+                pessoaRepository.saveAndFlush(PessoaUtils.createFakePessoa(faker));
+
                 counter.getAndSet(counter.get() + 1); //Não funcionou bem, o valor deve se perder nas multi thread
             });
             return counter.get();
         };
-    }
-
-    private Duration calculateTime(Instant startTime, Instant endTime) {
-        return Duration.between(startTime, endTime);
-    }
-
-    private Pessoa createFakePessoa(Faker faker) {
-        Pessoa pessoa = new Pessoa();
-        pessoa.setNome(faker.name().firstName());
-        pessoa.setSobrenome(faker.name().lastName());
-        pessoa.setDataCadastro(LocalDateTime.now());
-        pessoa.setObservacao(faker.lorem().sentence(10, 10));
-        pessoa.setDataNascimento(faker.date().birthday().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-
-        return pessoa;
     }
 
     private void showPoolInfoDebugLog(ForkJoinPool pool) {
