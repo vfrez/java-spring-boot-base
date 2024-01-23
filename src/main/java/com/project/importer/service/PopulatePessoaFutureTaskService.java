@@ -24,9 +24,9 @@ public class PopulatePessoaFutureTaskService {
     public DefaultPopulatePessoaResponse populatePessoaFutureTask(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         StopWatch stopWatch = StopWatch.createStarted();
 
-        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity();
+        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity(); //Quantidade não está sendo levado para a task, assim só se cria multiplos de maxBatchSize
         Integer maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
-        Integer totalPages = quantity / maxBatchSize; //Tem que arredondar pra cima
+        Integer totalPages = (int) Math.ceil((double) quantity / maxBatchSize);
         List<PopulatePessoaTask> pessoaTaskList = new ArrayList<>(totalPages);
 
         IntStream.rangeClosed(1, totalPages)
@@ -49,9 +49,9 @@ public class PopulatePessoaFutureTaskService {
     public DefaultPopulatePessoaResponse populatePessoaFutureTaskWithResponse(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         StopWatch stopWatch = StopWatch.createStarted();
 
-        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity();
+        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity(); //Quantidade não está sendo levado para a task, assim só se cria multiplos de maxBatchSize
         Integer maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
-        Integer totalPages = quantity / maxBatchSize; //Tem que arredondar pra cima
+        Integer totalPages = (int) Math.ceil((double) quantity / maxBatchSize); //Tem que arredondar pra cima
         List<PopulatePessoaTask> pessoaTaskList = new ArrayList<>(totalPages);
 
         IntStream.rangeClosed(1, totalPages)
@@ -71,6 +71,5 @@ public class PopulatePessoaFutureTaskService {
                 .loadTime(loadTime)
                 .build();
     }
-
 
 }

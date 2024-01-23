@@ -31,7 +31,7 @@ public class PopulatePessoaFutureTaskController {
 
     @PostMapping(value = "future-task/with-response", consumes = "application/json")
     private ResponseEntity<Object> populatePessoaFutureTaskWithResponse(@RequestBody PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
-        DefaultPopulatePessoaResponse pessoaResponse = populatePessoaSingleThreadService.populatePessoaFutureTask(populateTableSingleThreadRequestDTO);
+        DefaultPopulatePessoaResponse pessoaResponse = populatePessoaSingleThreadService.populatePessoaFutureTaskWithResponse(populateTableSingleThreadRequestDTO);
         if (Objects.nonNull(pessoaResponse)) {
             return new ResponseEntity<>(pessoaResponse, HttpStatus.OK);
         }
