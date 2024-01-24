@@ -7,13 +7,23 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  importer-build:
 
     runs-on: ubuntu-latest
 
+    #Example https://github.com/norio-io/example-github-actions-with-ephemeral-mysql/blob/main/.github/workflows/example.yml
+    services:
+      db:
+        image: mysql:latest
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
+    - name: Checkout Actions
+      uses: actions/checkout@v4
+    - name: Set up JDK 17 temurin
       uses: actions/setup-java@v4
       with:
         java-version: '17'
