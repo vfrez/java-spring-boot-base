@@ -23,18 +23,35 @@ jobs:
     steps:
     - name: Checkout Actions
       uses: actions/checkout@v4
+    
     - name: Set up JDK 17 temurin
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+        
     - name: Build with Maven
-      run: mvn -B package
+      run: mvn package -B -DskipTests
+    
+    - name: Test with Maven
+      run: mvn test -B -Dmaven.test.failure.ignore=true
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Maven Tests
+        path: target/surefire-reports/*.xml
+        reporter: java-junit
+        fail-on-error: true
+    
     - name: Show VM CPU specs
       run: lscpu
+    
     - name: Show VM RAM specs
       run: free -m
+    
     - name: Show VM HD specs
       run: lsblk
 
