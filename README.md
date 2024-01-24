@@ -1,3 +1,4 @@
+[![Java CI with Maven](https://github.com/vfrez/java-spring-boot-base/actions/workflows/maven.yml/badge.svg)](https://github.com/vfrez/java-spring-boot-base/actions/workflows/maven.yml)
 
 # Testes com Spring-boot
 
