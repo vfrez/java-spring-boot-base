@@ -18,7 +18,7 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_ROOT_PASSWORD: root
 
     steps:
     - name: Checkout Actions
@@ -31,6 +31,12 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package
+    - name: Show VM CPU specs
+      run: lscpu
+    - name: Show VM RAM specs
+      run: free -m
+    - name: Show VM HD specs
+      run: lsblk
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
