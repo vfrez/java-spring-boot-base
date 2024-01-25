@@ -1,10 +1,6 @@
 ## Database Properties
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/importer?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 40
       minimum-idle: 20
@@ -26,9 +22,3 @@ spring:
 #    properties:
 #      hibernate:
 #        dialect: org.hibernate.dialect.MySQLDialect
-
-#logging:
-#  level:
-#    #Habilita informações sobre o hikari, como o tamanho do pool atual
-#    com.zaxxer.hikari.HikariConfig: DEBUG
-#    com.zaxxer.hikari: TRACE
