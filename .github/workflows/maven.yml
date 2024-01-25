@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: CI - Continuous Integration
 
 on:
   push:
@@ -7,19 +7,22 @@ on:
     branches: [ "master" ]
 
 jobs:
-  importer-build:
-
+  show-environment-specs:
+    name: Showing environment specifications
     runs-on: ubuntu-latest
+    steps:
+      - name: Show VM CPU specs
+        run: lscpu
 
-    #Example https://github.com/norio-io/example-github-actions-with-ephemeral-mysql/blob/main/.github/workflows/example.yml
-    services:
-      db:
-        image: mysql:latest
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: root
+      - name: Show VM RAM specs
+        run: free -m
 
+      - name: Show VM HD specs
+        run: lsblk
+
+  build:
+    name: Building project
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout Actions
       uses: actions/checkout@v4
@@ -33,7 +36,12 @@ jobs:
         
     - name: Build with Maven
       run: mvn package -B -DskipTests
-    
+
+  test:
+    name: Testing project
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
     - name: Test with Maven
       run: mvn test -B -Dmaven.test.failure.ignore=true
 
@@ -45,16 +53,12 @@ jobs:
         path: target/surefire-reports/*.xml
         reporter: java-junit
         fail-on-error: true
-    
-    - name: Show VM CPU specs
-      run: lscpu
-    
-    - name: Show VM RAM specs
-      run: free -m
-    
-    - name: Show VM HD specs
-      run: lsblk
 
+  update-dependency-graph:
+    name: Updating dependency graph
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    steps:
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@v4
