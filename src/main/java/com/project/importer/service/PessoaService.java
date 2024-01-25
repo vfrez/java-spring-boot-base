@@ -55,6 +55,9 @@ public class PessoaService {
             Pessoa pessoa = oldPessoaOpt.get();
             pessoa.setDataAtualizacao(LocalDateTime.now());
             pessoa.setNome(newPessoa.getNome());
+            pessoa.setSobrenome(newPessoa.getSobrenome());
+            pessoa.setDataNascimento(newPessoa.getDataNascimento());
+            pessoa.setObservacao(newPessoa.getObservacao());
 
             return pessoaRepository.saveAndFlush(pessoa);
         } else {
