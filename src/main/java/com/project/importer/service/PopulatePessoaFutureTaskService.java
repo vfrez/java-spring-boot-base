@@ -24,17 +24,18 @@ public class PopulatePessoaFutureTaskService {
     public DefaultPopulatePessoaResponse populatePessoaFutureTask(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         StopWatch stopWatch = StopWatch.createStarted();
 
-        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity(); //Quantidade não está sendo levado para a task, assim só se cria multiplos de maxBatchSize
-        Integer maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
-        Integer totalPages = (int) Math.ceil((double) quantity / maxBatchSize);
+        int quantity = populateTableSingleThreadRequestDTO.getQuantity(); //Quantidade não está sendo levado para a task, assim só se cria multiplos de maxBatchSize
+        int maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
+        int totalPages = (int) Math.ceil((double) quantity / maxBatchSize);
+        int poolSize = populateTableSingleThreadRequestDTO.getPoolSize();
         List<PopulatePessoaTask> pessoaTaskList = new ArrayList<>(totalPages);
+
+        log.info("Starting loop. Registering {} itens with {} threads in parallel using custom pool. Max batch size {}.", quantity, poolSize, maxBatchSize);
 
         IntStream.rangeClosed(1, totalPages)
                 .forEach(index -> pessoaTaskList.add(new PopulatePessoaTask(maxBatchSize, index, totalPages, pessoaRepository)));
 
-        PopulatePessoaExecutor pessoaExecutor = new PopulatePessoaExecutor(populateTableSingleThreadRequestDTO.getPoolSize());
-
-        log.info("Submitting and awaiting Tasks ...");
+        PopulatePessoaExecutor pessoaExecutor = new PopulatePessoaExecutor(poolSize);
 
         pessoaExecutor.submitAndWaitNoResponse(pessoaTaskList);
 
@@ -49,17 +50,18 @@ public class PopulatePessoaFutureTaskService {
     public DefaultPopulatePessoaResponse populatePessoaFutureTaskWithResponse(PopulateTableSingleThreadRequestDTO populateTableSingleThreadRequestDTO) {
         StopWatch stopWatch = StopWatch.createStarted();
 
-        Integer quantity = populateTableSingleThreadRequestDTO.getQuantity(); //Quantidade não está sendo levado para a task, assim só se cria multiplos de maxBatchSize
-        Integer maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
-        Integer totalPages = (int) Math.ceil((double) quantity / maxBatchSize); //Tem que arredondar pra cima
+        int quantity = populateTableSingleThreadRequestDTO.getQuantity(); //Quantidade não está sendo levado para a task, assim só se cria multiplos de maxBatchSize
+        int maxBatchSize = populateTableSingleThreadRequestDTO.getBatchSize();
+        int totalPages = (int) Math.ceil((double) quantity / maxBatchSize); //Tem que arredondar pra cima
         List<PopulatePessoaTask> pessoaTaskList = new ArrayList<>(totalPages);
+        int poolSize = populateTableSingleThreadRequestDTO.getPoolSize();
+
+        log.info("Starting loop. Registering {} itens {} threads in parallel using custom pool. Max batch size {}.", quantity, poolSize, maxBatchSize);
 
         IntStream.rangeClosed(1, totalPages)
                 .forEach(page -> pessoaTaskList.add(new PopulatePessoaTask(maxBatchSize, page, totalPages, pessoaRepository)));
 
-        PopulatePessoaExecutor pessoaExecutor = new PopulatePessoaExecutor(populateTableSingleThreadRequestDTO.getPoolSize());
-
-        log.info("Submitting and awaiting Tasks ...");
+        PopulatePessoaExecutor pessoaExecutor = new PopulatePessoaExecutor(poolSize);
 
         Integer totalRegistered = pessoaExecutor.submitAndWaitWithResponse(pessoaTaskList);
 

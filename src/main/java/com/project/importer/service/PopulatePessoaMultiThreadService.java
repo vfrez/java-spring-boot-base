@@ -25,13 +25,13 @@ public class PopulatePessoaMultiThreadService {
     private PessoaRepository pessoaRepository;
 
     public DefaultPopulatePessoaResponse populatePessoaTableMultiThread(PopulateTableMultiThreadRequestDTO populateTableMultiThreadRequestDTO) {
-        int quantity = populateTableMultiThreadRequestDTO.getQuantity();
-
-        log.info("Starting loop. {} Registers on a single batch in parallel using default ForkPool. Committing each registers.", quantity);
-
         StopWatch startTime = StopWatch.createStarted();
 
         ForkJoinPool defaultPool = ForkJoinPool.commonPool();
+
+        int quantity = populateTableMultiThreadRequestDTO.getQuantity();
+
+        log.info("Starting loop. Registering {} itens in parallel, using default ForkPool with {} threads. Committing each register.", quantity, defaultPool.getParallelism());
         showPoolInfoInfoLog(defaultPool);
 
         Faker faker = new Faker(new Locale("pt-BR"));
@@ -39,8 +39,6 @@ public class PopulatePessoaMultiThreadService {
             showPoolInfoDebugLog(defaultPool);
             pessoaRepository.saveAndFlush(PessoaUtils.createFakePessoa(faker));
         });
-
-        showPoolInfoInfoLog(defaultPool);
 
         String loadTime = startTime.formatTime();
         log.info("Generated {} registers on table PESSOA. Time to process: {}.", quantity, loadTime);
@@ -55,10 +53,10 @@ public class PopulatePessoaMultiThreadService {
         int quantity = populateTableMultiThreadRequestDTO.getQuantity();
         int poolSize = populateTableMultiThreadRequestDTO.getPoolSize();
 
-        log.info("Starting loop. {} Registers on a single batch in parallel using {} thread on new ThreadPool. Committing each registers.", quantity, poolSize);
-
         StopWatch startTime = StopWatch.createStarted();
         ForkJoinPool customThreadPool = new ForkJoinPool(poolSize);
+
+        log.info("Starting loop. Registering {} itens in parallel on new ThreadPool with {} threads. Committing each register.", quantity, customThreadPool.getParallelism());
         showPoolInfoInfoLog(customThreadPool);
 
         Integer registeredCounter;
