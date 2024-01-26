@@ -1,3 +1,4 @@
+[![GitHub release](https://img.shields.io/github/v/release/vfrez/java-spring-boot-base)](https://github.com/vfrez/java-spring-boot-base/releases/latest)
 [![Java CI with Maven](https://github.com/vfrez/java-spring-boot-base/actions/workflows/maven.yml/badge.svg)](https://github.com/vfrez/java-spring-boot-base/actions/workflows/maven.yml)
 
 # Testes com Spring-boot
