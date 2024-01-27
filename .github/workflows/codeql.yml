@@ -47,7 +47,14 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
+    
+    - name: Set up JDK 17 temurin
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
